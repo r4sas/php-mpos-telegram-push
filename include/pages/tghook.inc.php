@@ -16,7 +16,7 @@ $update = json_decode($content, true);
 $chatID = $update["message"]["chat"]["id"];
 $message = $update["message"]["text"];
 
-$prepareResponse = function ($message) use ($chatID, $api, $setting, $block, $worker, $mysqli){
+$prepareResponse = function ($message) use ($chatID, $api, $setting, $block, $transaction, $worker, $mysqli){
         switch($message){
                 case "/start":
                         $response = "Hi there! I'm ".($setting->getValue('website_title')?:"PHP-MPOS")." notifications bot.".PHP_EOL."Type /help to see all commands!";
@@ -35,11 +35,12 @@ $prepareResponse = function ($message) use ($chatID, $api, $setting, $block, $wo
 			// Get userID in MPOS by chatID
 			$stmt = $mysqli->prepare("SELECT account_id as user_id FROM user_settings WHERE value LIKE '%".$chatID."%' LIMIT 1");
 			if($stmt && $stmt->execute() && $result = $stmt->get_result())
-			if($user_id = $result->fetch_object()){ // If user with chatID found
+			if($user_id = $result->fetch_object()->user_id){ // If user with chatID found
 				if ( ! $interval = $setting->getValue('statistics_ajax_data_interval')) $interval = 300;
 				$workers = $worker->getWorkers($user_id, $interval); // Get all workers and prepare message
+				$response = '';
 				foreach ($workers as $worker)
-					$response .= sprintf("*Username: %s*\nShares: %s\nHashrate: %s\nDifficulty: %s\n\n", $worker[username], $worker[shares], $worker[hashrate], $worker[difficulty]);
+					$response .= sprintf("*Username: %s*\nShares: %.4f\nHashrate: %.4f\nDifficulty: %.4f\n\n", $worker['username'], $worker['shares'], $worker['hashrate'], $worker['difficulty']);
 			} else { // Else write about requirement to provide chatID in notification settings
 				$response = "We coudn't find you in our database.".PHP_EOL."Make sure that you set ID in notifications settings on pool.";
 			}
@@ -68,4 +69,3 @@ function sendMessage($chatID, $reply){
 
 $reply = $prepareResponse($message);
 sendMessage($chatID, $reply);
-
