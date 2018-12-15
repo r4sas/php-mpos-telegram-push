@@ -1,7 +1,8 @@
 <?php
 define('TGAPI_URL', 'https://api.telegram.org/bot' . $this->config['push']['telegram']['api_key']);
+define('TG_BOTNAME', $this->config['push']['telegram']['bot_username']);
 
-class Notifications_Telegramnew implements IPushNotification {
+class Notifications_Telegram implements IPushNotification {
 
     private $tgid;
     public function __construct($tgid){
@@ -15,12 +16,12 @@ class Notifications_Telegramnew implements IPushNotification {
     );
 
     public static function getName(){
-        return "Telegram";
+        return "Telegram (@".TG_BOTNAME.")";
     }
 
     public static function getParameters(){
         return array(
-            'tgid' => 'Your Telegram ID from bot',
+            'tgid' => 'Your Telegram Chat ID',
         );
     }
 
