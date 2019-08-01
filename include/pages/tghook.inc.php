@@ -3,10 +3,32 @@ $supress_master = 1;
 
 define('TGAPI_URL', 'https://api.telegram.org/bot' . $config['push']['telegram']['api_key']);
 
-// https://gist.github.com/theMiddleBlue/6d5e9082e0c3c378bfb037795b2570b8
-if(!preg_match('/^149\.154\.167\.(19[7-9]|20[0-9]|21[0-9]|22[0-9]|23[0-3])$/', $_SERVER['REMOTE_ADDR'])) {
+// Telegram Bot API webhook requests subnets
+$tgAllowedSubnets = array("149.154.160.0/20", "91.108.4.0/22");
+
+/**
+ * Checks if a given IP address matches the specified CIDR subnet/s
+ *
+ * @param string $ip The IP address to check
+ * @param mixed $cidrs The IP subnet (string) or subnets (array) in CIDR notation
+ * @param string $match optional If provided, will contain the first matched IP subnet
+ * @return boolean TRUE if the IP matches a given subnet or FALSE if it does not
+ */
+function ipMatch($ip, $cidrs, &$match = null) {
+	foreach((array) $cidrs as $cidr) {
+		list($subnet, $mask) = explode('/', $cidr);
+		if(((ip2long($ip) & ($mask = ~ ((1 << (32 - $mask)) - 1))) == (ip2long($subnet) & $mask))) {
+			$match = $cidr;
+			return true;
+		}
+	}
+	return false;
+}
+
+if(!ipMatch($_SERVER['REMOTE_ADDR'], $tgAllowedSubnets)) {
     die('IP Address not allowed.');
 }
+
 if($_SERVER['REQUEST_METHOD'] != 'POST') {
     die('Request method not allowed.');
 }
