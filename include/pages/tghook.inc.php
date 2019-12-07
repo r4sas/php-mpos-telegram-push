@@ -42,7 +42,8 @@ $prepareResponse = function ($message) use ($chatID, $api, $bitcoin, $block, $se
 	// Get userID in MPOS by chatID
 	$stmt = $mysqli->prepare("SELECT account_id as user_id FROM user_settings WHERE value LIKE '%".$chatID."%' LIMIT 1");
 	if($stmt && $stmt->execute() && $result = $stmt->get_result())
-		$user_id = $result->fetch_object()->user_id;
+		$row = $result->fetch_object();
+		$user_id = (!empty($row->user_id)) ? $row->user_id : 0;
 	if ( ! $interval = $setting->getValue('statistics_ajax_data_interval')) $interval = 300;
 
 	$response = '';

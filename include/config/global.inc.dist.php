@@ -317,6 +317,7 @@ $config['system']['load']['max'] = 10.0;
 
 /**
  * Telegram notificator configuration
- *  To use push notifications via Telegram you need create bot and set here its API key
+ *  To use push notifications via Telegram you need create bot and set here its API key and username (without '@')
  **/
 $config['push']['telegram']['api_key'] = '';
+$config['push']['telegram']['bot_username'] = '';
